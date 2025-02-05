@@ -1,0 +1,47 @@
+# Redirect all traffic to HTTPS
+RewriteEngine On
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ http://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Prevent direct access to sensitive files
+<FilesMatch "(^\.|htaccess|htpasswd|config\.php|server\.js|package\.json|node_modules)">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# Enable CORS (Allow API requests)
+<IfModule mod_headers.c>
+    Header set Access-Control-Allow-Origin "*"
+    Header set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+    Header set Access-Control-Allow-Headers "Content-Type, Authorization"
+</IfModule>
+
+# Redirect www to non-www (optional)
+RewriteCond %{HTTP_HOST} ^www\.(.*)$ [NC]
+RewriteRule ^(.*)$ https://%1/$1 [R=301,L]
+
+# Redirect trailing slashes (optional)
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.+)/$ https://%{HTTP_HOST}/$1 [R=301,L]
+
+# Redirect users to index.html if no file is found
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ /index.html [L,QSA]
+
+# Enable Browser Caching
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/html "access 1 day"
+    ExpiresByType image/jpeg "access 1 month"
+    ExpiresByType image/png "access 1 month"
+    ExpiresByType image/gif "access 1 month"
+    ExpiresByType text/css "access 1 week"
+    ExpiresByType application/javascript "access 1 week"
+</IfModule>
+
+# Protect .htaccess from being viewed
+<Files .htaccess>
+    Order Allow,Deny
+    Deny from all
+</Files>
